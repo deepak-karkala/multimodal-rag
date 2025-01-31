@@ -8,12 +8,16 @@ from PIL import Image
 from transformers import (AutoModelForVision2Seq, AutoProcessor,
                           BitsAndBytesConfig)
 from transformers.image_utils import load_image
+from pdf2image import convert_from_bytes
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
+'''
 @st.cache_resource  # Streamlit Caching decorator
 def load_model_embedding():
-    docs_retrieval_model = RAGMultiModalModel.from_pretrained("vidore/colsmolvlm-alpha")
+    checkpoint = "vidore/colqwen2-v0.1"
+    # checkpoint = "vidore/colsmolvlm-alpha"
+    docs_retrieval_model = RAGMultiModalModel.from_pretrained(checkpoint)
 model_embedding = load_model_embedding()
 
 @st.cache_resource  # Streamlit Caching decorator
@@ -28,17 +32,17 @@ def load_model_vlm():
     )
     return model, processor
 model_vlm, processor_vlm = load_model_vlm()
-
+'''
 
 
 def save_images_to_local(dataset, output_folder="data/"):
     os.makedirs(output_folder, exist_ok=True)
 
-    for image_id, image_data in enumerate(dataset):
-        image = image_data["image"]
+    for image_id, image in enumerate(dataset):
+        #image = image_data["image"]
 
-        if isinstance(image, str):
-            image = Image.open(image)
+        #if isinstance(image, str):
+        #    image = Image.open(image)
 
         output_path = os.path.join(output_folder, f"image_{image_id}.png")
         image.save(output_path, format="PNG")
@@ -57,20 +61,20 @@ uploaded_pdf = st.file_uploader("Upload PDF file", type=("pdf"))
 query = st.text_input(
     "Ask something about the image",
     placeholder="Can you describe me the image ?",
-    disabled=not uploaded_file,
+    disabled=not uploaded_pdf,
 )
 
-if uploaded_file:
+if uploaded_pdf:
     images = convert_from_bytes(uploaded_pdf.getvalue())
-    save_images_to_local(dataset)
+    save_images_to_local(images)
     # index documents using the document retrieval model
-    model_embedding.index(
-        input_path="data/", index_name="image_index", store_collection_with_index=False, overwrite=True
-    )
+    # model_embedding.index(
+    #   input_path="data/", index_name="image_index", store_collection_with_index=False, overwrite=True
+    #)
 
 
 
-if uploaded_file and query:
+if uploaded_pdf and query:
     #image_bytes = uploaded_file.read()
     #image = Image.open(io.BytesIO(image_bytes))
 
