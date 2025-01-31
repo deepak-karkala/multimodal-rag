@@ -10,3 +10,7 @@ torch
 transformers
 accelerate>=0.26.0
 bitsandbytes
+pillow
+flash-attn
+byaldi
+pdf2image
